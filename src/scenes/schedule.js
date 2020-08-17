@@ -76,16 +76,12 @@ const schedule = new WizardScene(
   },
   ctx => {
     const callbackData = ctx.update.callback_query != undefined ? ctx.update.callback_query.data : undefined;
-    if(callbackData==='confirm'){
-      ctx.answerCbQuery('Post successfully planned');
+    if(callbackData==='confirm'||callbackData==='cancel'){
+      callbackData === 'confirm' ? ctx.answerCbQuery('Post successfully planned') : ctx.answerCbQuery('Post cancelled');
       const { date } = ctx.wizard.state.data;
-      const newCaption = `${ctx.wizard.state.data.caption}\n\n${date.getDate()}/${date.getMonth()}/2020 ${date.getHours()}:${date.getMonth()}`;
-      ctx.telegram.editMessageCaption(ctx.from.id, ctx.wizard.state.data.dashboard.message_id, null, newCaption);
-      return ctx.scene.leave();
-    }
-    else if(callbackData==='cancel'){
-      ctx.answerCbQuery('Post cancelled');
-      const newCaption = `${ctx.wizard.state.data.caption}\n\nPost cancelled`;
+      const newCaption = callbackData === 'confirm' ? 
+            `${ctx.wizard.state.data.caption}\n\n${date.getDate()}/${date.getMonth()}/2020 ${date.getHours()}:${date.getMonth()}` :
+            `${ctx.wizard.state.data.caption}\n\nPost cancelled`;
       ctx.telegram.editMessageCaption(ctx.from.id, ctx.wizard.state.data.dashboard.message_id, null, newCaption);
       return ctx.scene.leave();
     }
