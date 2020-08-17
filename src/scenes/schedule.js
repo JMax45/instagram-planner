@@ -3,8 +3,9 @@ const Telegraf = require('telegraf');
 const { Router, Markup, Extra } = Telegraf;
 const Instagram = require('../Instagram');
 const instagram = new Instagram();
+const schedule = require('node-schedule');
 
-const schedule = new WizardScene(
+const scheduleScene = new WizardScene(
   'schedule',
   ctx => {
     ctx.reply("Send me the media of the post");
@@ -45,7 +46,7 @@ const schedule = new WizardScene(
     }
     else if(split[0]==='now'){
       publication.parsed = { year: today.getFullYear(), day: today.getDate(), month: today.getMonth(), hour: today.getHours(), minute: today.getMinutes() };
-      publication.now = true;
+      ctx.wizard.state.data.now = true;
     }
     else{
       publication.parsed = { year: today.getFullYear(), day: split[0], month: split[1]-1, hour: split[2], minute: split[3] };
@@ -87,6 +88,16 @@ const schedule = new WizardScene(
         ctx.wizard.state.data.media.url = url;
         ctx.wizard.state.data.media.file_id = media.file.file_id;
         delete ctx.wizard.state.data.media.file;
+
+        const post = ctx.wizard.state.data;
+        if(post.now===true){
+          instagram.postPicture(ctx, post);
+        }
+        else{
+          schedule.scheduleJob(post.date, function(){
+            instagram.postPicture(ctx, post);
+          });
+        }  
       })
       return ctx.scene.leave();
     }
@@ -96,4 +107,4 @@ const schedule = new WizardScene(
   }
 );
 
-module.exports = schedule;
+module.exports = scheduleScene;
