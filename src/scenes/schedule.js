@@ -1,6 +1,8 @@
 const WizardScene = require('telegraf/scenes/wizard');
 const Telegraf = require('telegraf');
 const { Router, Markup, Extra } = Telegraf;
+const Instagram = require('../Instagram');
+const instagram = new Instagram();
 
 const schedule = new WizardScene(
   'schedule',
@@ -78,9 +80,14 @@ const schedule = new WizardScene(
     const callbackData = ctx.update.callback_query != undefined ? ctx.update.callback_query.data : undefined;
     if(callbackData==='confirm'||callbackData==='cancel'){
       callbackData === 'confirm' ? ctx.answerCbQuery('Post successfully planned') : ctx.answerCbQuery('Post cancelled');
-      const { date, dashboard, caption } = ctx.wizard.state.data;
+      const { date, dashboard, caption, media } = ctx.wizard.state.data;
       const newCaption = callbackData === 'confirm' ? `\n\n${date.toLocaleString()}` : `\n\nPost cancelled`;
       ctx.telegram.editMessageCaption(ctx.from.id, dashboard.message_id, null, caption + newCaption);
+      ctx.telegram.getFileLink(media.file.file_id).then(url => {
+        ctx.wizard.state.data.media.url = url;
+        ctx.wizard.state.data.media.file_id = media.file.file_id;
+        delete ctx.wizard.state.data.media.file;
+      })
       return ctx.scene.leave();
     }
     else{
