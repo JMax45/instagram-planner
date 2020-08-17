@@ -1,4 +1,7 @@
 const WizardScene = require('telegraf/scenes/wizard');
+const Telegraf = require('telegraf');
+const { Router, Markup, Extra } = Telegraf;
+
 const schedule = new WizardScene(
   'schedule',
   ctx => {
@@ -51,7 +54,44 @@ const schedule = new WizardScene(
 
     ctx.wizard.state.data.date = publication.date;
 
-    console.log(ctx.wizard.state.data)
+    const extra = Extra.markup(Markup.inlineKeyboard([
+      Markup.callbackButton('Confirm', 'confirm'),
+      Markup.callbackButton('Cancel', 'cancel')
+    ]))
+    extra.caption = ctx.wizard.state.data.caption;
+
+    const { type } = ctx.wizard.state.data.media;
+    if(type==='photo'){
+      ctx.replyWithPhoto(ctx.wizard.state.data.media.file.file_id, extra).then((result) => {
+        ctx.wizard.state.data.dashboard = { chat_id: ctx.message.chat.id, message_id: result.message_id };
+        return ctx.wizard.next();
+      });
+    }
+    else if(type==='video'){
+      ctx.replyWithVideo(ctx.wizard.state.data.media.file.file_id, extra).then((result) => {
+        ctx.wizard.state.data.dashboard = { chat_id: ctx.message.chat.id, message_id: result.message_id };
+        return ctx.wizard.next();
+      });
+    }  
+  },
+  ctx => {
+    const callbackData = ctx.update.callback_query != undefined ? ctx.update.callback_query.data : undefined;
+    if(callbackData==='confirm'){
+      ctx.answerCbQuery('Post successfully planned');
+      const { date } = ctx.wizard.state.data;
+      const newCaption = `${ctx.wizard.state.data.caption}\n\n${date.getDate()}/${date.getMonth()}/2020 ${date.getHours()}:${date.getMonth()}`;
+      ctx.telegram.editMessageCaption(ctx.from.id, ctx.wizard.state.data.dashboard.message_id, null, newCaption);
+      return ctx.scene.leave();
+    }
+    else if(callbackData==='cancel'){
+      ctx.answerCbQuery('Post cancelled');
+      const newCaption = `${ctx.wizard.state.data.caption}\n\nPost cancelled`;
+      ctx.telegram.editMessageCaption(ctx.from.id, ctx.wizard.state.data.dashboard.message_id, null, newCaption);
+      return ctx.scene.leave();
+    }
+    else{
+      ctx.reply('Please confirm or cancel');
+    }
   }
 );
 
