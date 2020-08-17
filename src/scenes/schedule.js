@@ -4,6 +4,9 @@ const { Router, Markup, Extra } = Telegraf;
 const Instagram = require('../Instagram');
 const instagram = new Instagram();
 const schedule = require('node-schedule');
+const JMongo = require('jmongo');
+const jmongo = new JMongo(process.env.DB_URL, process.env.DB_NAME);
+const { ObjectID } = require('mongodb');
 
 const scheduleScene = new WizardScene(
   'schedule',
@@ -90,10 +93,12 @@ const scheduleScene = new WizardScene(
         delete ctx.wizard.state.data.media.file;
 
         const post = ctx.wizard.state.data;
+        post._id = new ObjectID();
         if(post.now===true){
           instagram.postPicture(ctx, post);
         }
         else{
+          jmongo.insertDocument('posts', post);
           schedule.scheduleJob(post.date, function(){
             instagram.postPicture(ctx, post);
           });

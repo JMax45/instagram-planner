@@ -27,11 +27,24 @@ class Bot{
 
 		// JMongo
 		const JMongo = require('jmongo');
-		const jmongo = new JMongo(process.env.JMONGO_URL, process.env.JMONGO_NAME);
+		const jmongo = new JMongo(process.env.DB_URL, process.env.DB_NAME);
 
 		// Responses
 		this.Responses = require('./Responses');
 		this.telegraf = new this.Responses(this.telegraf, jmongo);
+
+		// Node schedule
+		const schedule = require('node-schedule');
+		const Instagram = require('./Instagram');
+		const instagram = new Instagram();
+		jmongo.loadAll('posts', (result) => {
+			const telegraf = this.telegraf;
+			for(let i=0; i<result.length; i++){
+				schedule.scheduleJob(result[i].date, function(){
+					instagram.postPicture(telegraf, result[i]);
+				});
+			}
+		})
 	}
 }
 

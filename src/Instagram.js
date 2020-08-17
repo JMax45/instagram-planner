@@ -1,6 +1,8 @@
 const Telegraf = require('telegraf');
 const { Router, Markup, Extra } = Telegraf;
 const InstagramApi = require('instagram-web-api');
+const JMongo = require('jmongo');
+const jmongo = new JMongo(process.env.DB_URL, process.env.DB_NAME);
 
 class Instagram {
     constructor(){
@@ -15,6 +17,7 @@ class Instagram {
         ;(async () => {  
         await client.login()
         
+        jmongo.deleteDocument('posts', { _id: post._id });
         // Upload Photo to feed or story, just configure 'post' to 'feed' or 'story'
         client.uploadPhoto({ photo: post.media.url, caption: post.caption, post: 'feed' })
             .then((status) => {
