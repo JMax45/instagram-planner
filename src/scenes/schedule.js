@@ -17,7 +17,7 @@ const scheduleScene = new WizardScene(
   },
   ctx => {
     const { photo, video } = ctx.message;
-    ctx.wizard.state.data.media = photo ? { type: 'photo', file: photo[photo.length-1] } : { type: 'video', file: video };
+    ctx.wizard.state.data.media = photo ? { type: 'photo', file: photo[photo.length-1] } : { type: undefined, file: undefined };
 
     if(ctx.wizard.state.data.media.file===undefined){
       ctx.reply('Invalid media. Please retry');
