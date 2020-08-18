@@ -41,13 +41,13 @@ const scheduleScene = new WizardScene(
 
     const { split } = publication;
     const today = new Date();
-    if(split[0]==='today'){
+    if(split[0].toLowerCase()==='today'){
       publication.parsed = { year: today.getFullYear(), day: today.getDate(), month: today.getMonth(), hour: split[1], minute: split[2] };
     }
-    else if(split[0]==='tomorrow'){
+    else if(split[0].toLowerCase()==='tomorrow'){
       publication.parsed = { year: today.getFullYear(), day: today.getDate()+1, month: today.getMonth(), hour: split[1], minute: split[2] };
     }
-    else if(split[0]==='now'){
+    else if(split[0].toLowerCase()==='now'){
       publication.parsed = { year: today.getFullYear(), day: today.getDate(), month: today.getMonth(), hour: today.getHours(), minute: today.getMinutes() };
       ctx.wizard.state.data.now = true;
     }
