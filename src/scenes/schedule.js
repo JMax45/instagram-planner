@@ -87,23 +87,25 @@ const scheduleScene = new WizardScene(
       const { date, dashboard, caption, media } = ctx.wizard.state.data;
       const newCaption = callbackData === 'confirm' ? `\n\n${date.toLocaleString()}` : `\n\nPost cancelled`;
       ctx.telegram.editMessageCaption(ctx.from.id, dashboard.message_id, null, caption + newCaption);
-      ctx.telegram.getFileLink(media.file.file_id).then(url => {
-        ctx.wizard.state.data.media.url = url;
-        ctx.wizard.state.data.media.file_id = media.file.file_id;
-        delete ctx.wizard.state.data.media.file;
+      if(callbackData === 'confirm'){
+        ctx.telegram.getFileLink(media.file.file_id).then(url => {
+          ctx.wizard.state.data.media.url = url;
+          ctx.wizard.state.data.media.file_id = media.file.file_id;
+          delete ctx.wizard.state.data.media.file;
 
-        const post = ctx.wizard.state.data;
-        post._id = new ObjectID();
-        if(post.now===true){
-          instagram.postPicture(ctx, post);
-        }
-        else{
-          jmongo.insertDocument('posts', post);
-          schedule.scheduleJob(post.date, function(){
+          const post = ctx.wizard.state.data;
+          post._id = new ObjectID();
+          if(post.now===true){
             instagram.postPicture(ctx, post);
-          });
-        }  
-      })
+          }
+          else{
+            jmongo.insertDocument('posts', post);
+            schedule.scheduleJob(post.date, function(){
+              instagram.postPicture(ctx, post);
+            });
+          }  
+        })
+      }  
       return ctx.scene.leave();
     }
     else{
