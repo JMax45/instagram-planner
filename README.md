@@ -25,6 +25,11 @@ DB_NAME= # Your database name
 ## Usage
 Run the bot using ```npm start```.
 
+## Making yourself an admin
+The /schedule command has a private access so only the admins can execute it.
+To register yourself as an admin write /admin to the bot, it will work only if
+there are no other administrators to prevent other people from making themselves an admin.
+
 ## Schedule posts
 Send ```/schedule``` to the bot.
 The rest of the process is guided.
